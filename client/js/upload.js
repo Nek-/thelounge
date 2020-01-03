@@ -130,6 +130,41 @@ class Uploader {
 
 	uploadNextFileInQueue(token) {
 		const file = this.fileQueue.shift();
+
+		if (file.type.startsWith("image/")) {
+			this.renderImage(file, (newFile) => this.performUpload(token, newFile));
+		} else {
+			this.performUpload(token, file);
+		}
+	}
+
+	renderImage(file, callback) {
+		const fileReader = new FileReader();
+
+		// TODO: Handle error/abort events
+		fileReader.onload = () => {
+			const img = new Image();
+
+			// TODO: Handle error/abort events
+			img.onload = () => {
+				const canvas = document.createElement("canvas");
+				canvas.width = img.width;
+				canvas.height = img.height;
+				const ctx = canvas.getContext("2d");
+				ctx.drawImage(img, 0, 0);
+
+				canvas.toBlob((blob) => {
+					callback(new File([blob], file.name));
+				}, file.type);
+			};
+
+			img.src = fileReader.result;
+		};
+
+		fileReader.readAsDataURL(file);
+	}
+
+	performUpload(token, file) {
 		this.xhr = new XMLHttpRequest();
 
 		this.xhr.upload.addEventListener(
