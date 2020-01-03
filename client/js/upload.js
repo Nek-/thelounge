@@ -131,7 +131,7 @@ class Uploader {
 	uploadNextFileInQueue(token) {
 		const file = this.fileQueue.shift();
 
-		if (file.type.startsWith("image/")) {
+		if (file.type.startsWith("image/") && !file.type.includes("svg")) {
 			this.renderImage(file, (newFile) => this.performUpload(token, newFile));
 		} else {
 			this.performUpload(token, file);
